@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const bcrypt = require("bcrypt");
-const ExpressError = require("../expressError")
+const ExpressError = require("../expressError");
 const {BCRYPT_WORK_FACTOR} = require("../config");
 /** User of the site. */
 
@@ -13,14 +13,14 @@ class User {
    */
 
   static async register({username, password, first_name, last_name, phone}) {
-    const hashedPass = await bcrypt.hash(password, BCRYPT_WORK_FACTOR)
+    let hashedPass = await bcrypt.hash(password, BCRYPT_WORK_FACTOR)
     const result = await db.query(
       `INSERT INTO users
       (username, password, first_name, last_name, phone, join_at, last_login_at)
       VALUES ($1,$2,$3,$4,$5,current_timestamp,current_timestamp)
       RETURNING username, password, first_name, last_name, phone`,
       [username, hashedPass, first_name, last_name, phone]
-    )
+    );
 
     return result.rows[0];
    }
@@ -33,9 +33,9 @@ class User {
       FROM users
       WHERE username = $1`,
       [username]);
-      const user = result.rows[0];
+      let user = result.rows[0];
       if (user){
-        return await bcrypt.compare(password, user.password))
+        return await bcrypt.compare(password, user.password)
       } else{
         throw new ExpressError("Username/password not found", 400);
       }
@@ -138,7 +138,7 @@ class User {
 
     return result.rows.map( m => ({
       id: m.id,
-      to_user:{
+      from_user:{
         username: m.to_username,
         first_name: m.first_name,
         last_name: m.last_name,
